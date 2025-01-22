@@ -9,14 +9,9 @@ if (process.env.NODE_ENV === 'test') {
 
 const envSchema = z.object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('production'),
+    DATABASE_CLIENT: z.enum(['sqlite', 'pg']),
     DATABASE_URL: z.string(),
-    PORT: z.string()
-        .transform((value) => {
-            const parsed = Number(value);
-            if (isNaN(parsed)) throw new Error(`Invalid number for PORT: ${value}`);
-            return parsed;
-        })
-        .default('3333')
+    PORT: z.coerce.number().default(3333)
 })
 
 const _env = envSchema.safeParse(process.env);
