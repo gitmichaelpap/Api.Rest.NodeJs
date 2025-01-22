@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify"
 import { z } from "zod"
-import { knex } from "../database"
 import { randomUUID } from "crypto"
+import { knex } from "../database"
 
 export function transactionsRoutes(app: FastifyInstance) {
 
@@ -46,10 +46,23 @@ export function transactionsRoutes(app: FastifyInstance) {
 
         const { title, amount, type } = createTransactionSchema.parse(req.body)
 
+
+        let sesssionId = req.cookies.sessionId
+
+        if (!sesssionId) {
+            sesssionId = randomUUID()
+
+            res.cookie('sessionId', sesssionId, {
+                path: '/',
+                maxAge: 60 * 60 * 24 * 7, // 7 days
+            })
+        }
+
         await knex('transactions').insert({
             id: randomUUID(),
             title,
             amount: type === "debit" ? amount * -1 : amount,
+            session_id: sesssionId
         })
 
         return res.status(201).send()
